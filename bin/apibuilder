@@ -432,6 +432,18 @@ elsif command == "update"
     end
   end
 
+elsif command == "errors"
+  args = ApibuilderCli::Args.parse(ARGV)
+  path = ARGV.shift.to_s.strip
+  if !File.exists?(path)
+    puts "File #{path} does not exit"
+    exit(1)
+  end
+
+  file = IO.read(path)
+  ApibuilderCli::Errors.generateErrors(file)
+
+
 elsif command == "cli"
   subcommand = ARGV.shift.to_s.strip
 
