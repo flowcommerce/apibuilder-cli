@@ -432,17 +432,25 @@ elsif command == "update"
     end
   end
 
-elsif command == "errors"
+elsif command == "generate_errors"
   args = ApibuilderCli::Args.parse(ARGV)
   path = ARGV.shift.to_s.strip
+  if !path.end_with?("src.json")
+    puts "Can only generate errors from a .src.json file"
+    exit(1)
+  end
   if !File.exists?(path)
     puts "File #{path} does not exit"
     exit(1)
   end
 
   file = IO.read(path)
-  ApibuilderCli::Errors.generateErrors(file)
-
+  new_json = ApibuilderCli::GenerateErrors.generateErrors(file)
+  output_path = path.sub(/\.src\.json$/, ".json")
+  File.open(output_path, "w") do |f|
+    f.puts new_json
+  end
+  puts "Ok. Wrote " + output_path
 
 elsif command == "cli"
   subcommand = ARGV.shift.to_s.strip
