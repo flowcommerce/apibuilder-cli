@@ -52,20 +52,20 @@ module ApibuilderCli
             new_models = []
             new_unions = []
 
-            name = original_hash["name"]
+            service_name = original_hash["name"]
             resources = original_hash["resources"]
             models = original_hash["models"]
             unions = original_hash["unions"]
 
             resources.each do |resourceName, resource|
                 operationPaths = resource["operations"].map{ |o| (resource["path"] || "") + (o["path"] || "")}
-                commonLength = getCommonPrefixLength(operationPaths)
+                common_length = getCommonPrefixLength(operationPaths)
                 resource["operations"].each do |operation|
-                    operationName = getOperationName(resourceName, operation["method"], (resource["path"] || "") + (operation["path"] || ""), commonLength)
+                    operation_name = getOperationName(resourceName, operation["method"], (resource["path"] || "") + (operation["path"] || ""), common_length)
                     operation["responses"].each do |code, response|
                         if response["type"] == "union"
-                            error_name = operationName + "_error"
-                            union_name = operationName + "_error_detail"
+                            error_name = service_name + "_" + operation_name + "_error"
+                            union_name = service_name + "_" + operation_name + "_error_detail"
                             if !new_models.any?{ |m| m["name"] == error_name}
                                 fields  = [{"name" => "errors", "type" => "[" + union_name + "]"}]
                                 new_model = {"name" => error_name, "fields" => fields}
@@ -87,11 +87,11 @@ module ApibuilderCli
             end
 
             global_union_types = []
-            models.select{|k,v| k.end_with?("_error")}.each do |modelName, model|
-                global_union_types << { "type" => modelName }
+            models.select{|k,v| k.end_with?("_error")}.each do |model_name, model|
+                global_union_types << { "type" => model_name }
             end
 
-            new_unions << { "name" => name + "_error", "types" => global_union_types }
+            new_unions << { "name" => service_name + "_error", "types" => global_union_types }
 
             new_models.each do |model|
                 model_name = model.delete("name")
